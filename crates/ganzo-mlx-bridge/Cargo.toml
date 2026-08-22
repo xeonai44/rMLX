@@ -1,0 +1,18 @@
+[package]
+name = "ganzo-mlx-bridge"
+version = "0.1.0"
+edition = "2021"
+description = "Ganzo bridge over rMLX — embeds the rMLX OpenAI-compatible engine in-process"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+rmlx-server = { workspace = true }
+rmlx-core = { workspace = true }
+rmlx-models = { workspace = true }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+
+[lints]
+workspace = true

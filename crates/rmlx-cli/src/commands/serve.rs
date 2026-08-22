@@ -594,7 +594,7 @@ pub(crate) fn resolve_dispatch_policy(
     clippy::needless_pass_by_value,
     reason = "callers transfer ownership of CLI-parsed Option<String> params; refactoring to references would require lifetime parameters across the whole serve entry-point"
 )]
-pub(crate) fn run_serve(
+pub fn run_serve(
     model: Option<&Path>,
     registry_file: Option<&Path>,
     host: &str,
