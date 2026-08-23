@@ -645,6 +645,8 @@ pub fn run_serve(
     // (--image-max-tokens). None = use the snapshot's processor_config.json
     // max_soft_tokens. A per-request image_max_tokens field overrides this.
     image_max_tokens: Option<usize>,
+    // #172 E-1: optional bearer token required on all routes except /health.
+    auth_token: Option<String>,
     sink: &EventRecorder,
 ) -> anyhow::Result<()> {
     // The TurboFlash / planar-flash-decode gates are resolved in `main`, before
@@ -1105,6 +1107,8 @@ pub fn run_serve(
 
         let mut state = AppState {
             registry,
+            // #172 E-1: --auth-token (None = auth disabled, standalone-dev mode).
+            auth_token: auth_token.clone(),
             slots: Arc::new(parking_lot::RwLock::new(Vec::new())),
             embed_slot: Arc::new(parking_lot::RwLock::new(None)),
             // Clone the cache built above into AppState so the

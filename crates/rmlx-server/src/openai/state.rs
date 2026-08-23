@@ -502,6 +502,10 @@ impl Default for ApiErrorCounters {
 pub struct AppState {
     /// Registry of all known model snapshots and their metadata.
     pub registry: Arc<ModelRegistry>,
+    /// Optional bearer token (#172 E-1): when `Some`, every route except `/health`
+    /// requires `Authorization: Bearer <token>`. Embedded-host scenario (Ganzo App)
+    /// generates a per-launch token so other local processes cannot use the GPU.
+    pub auth_token: Option<String>,
     /// Resident model slots. Length ≤ `max_loaded_models`. An empty Vec =
     /// no model loaded. At `max_loaded_models == 1` this behaves exactly
     /// like the old single-slot `Option<LoadedModel>` (swap-on-different-id).

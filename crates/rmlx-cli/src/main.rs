@@ -552,6 +552,10 @@ enum Cmd {
         /// Host/IP to bind. Default 127.0.0.1 (or the profile's `host`).
         #[arg(long)]
         host: Option<String>,
+        /// Require `Authorization: Bearer <token>` on all routes except /health
+        /// (#172 E-1). Omit to disable auth (standalone-dev mode only).
+        #[arg(long)]
+        auth_token: Option<String>,
         /// Device to run inference on: "cpu" or "gpu".
         /// Defaults to "gpu". Chunked prefill (Stage-3.2b) resolves the Metal watchdog
         /// timeout on long prompts. Use --device cpu to fall back to CPU.
@@ -1966,6 +1970,7 @@ fn main() -> Result<()> {
             profile,
             port,
             host,
+            auth_token,
             device,
             kv_quant,
             kv_preset,
@@ -2319,6 +2324,7 @@ fn main() -> Result<()> {
                 session_cache_max_sessions,
                 yarn_override,
                 image_max_tokens,
+                auth_token,
                 &sink,
             )?;
         }

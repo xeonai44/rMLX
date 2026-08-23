@@ -52,11 +52,12 @@ pub use claim::{try_claim, ClaimError, MetalClaim, SENTINEL_PORT};
 
 use std::net::SocketAddr;
 
-use axum::extract::DefaultBodyLimit;
+use axum::extract::{DefaultBodyLimit, State};
 use axum::middleware;
+use axum::response::Response;
 use axum::routing::{get, post};
 use axum::serve::ListenerExt;
-use axum::Router;
+use axum::{http::StatusCode, Router};
 use serde_json::json;
 use tracing::{info, warn};
 
@@ -99,6 +100,28 @@ pub use session_cache::{effective_prompt_cache_slots, SessionCache, SessionKey};
 /// `GET /metrics/cache` — prompt-cache hit/miss/bytes (N19) + TTFT ring-buffer (L6) — JSON
 /// `GET /metrics` — Prometheus text exposition v0.0.4 (F5) — same data as /metrics/cache
 /// `GET /v1/metrics` — rolling request-level JSON summary — mlx-vlm compatible
+/// #172 E-1: bearer-token auth middleware. When `state.auth_token` is `Some`,
+/// every route except `/health` must present `Authorization: Bearer <token>`.
+async fn auth_mw(
+    State(state): State<AppState>,
+    req: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> Result<Response, StatusCode> {
+    if let Some(expected) = state.auth_token.as_deref() {
+        if req.uri().path() != "/health" {
+            let ok = req
+                .headers()
+                .get(axum::http::header::AUTHORIZATION)
+                .and_then(|v| v.to_str().ok())
+                .is_some_and(|v| v == format!("Bearer {expected}"));
+            if !ok {
+                return Err(StatusCode::UNAUTHORIZED);
+            }
+        }
+    }
+    Ok(next.run(req).await)
+}
+
 pub fn build_router(state: AppState) -> Router {
     Router::new()
         // Liveness probe.
@@ -128,6 +151,11 @@ pub fn build_router(state: AppState) -> Router {
         .route("/metrics", get(openai::metrics_prometheus))
         // Metrics: rolling request-level JSON summary (mlx-vlm compatible).
         .route("/v1/metrics", get(openai::metrics_v1_summary))
+        // #172 E-1: bearer-token auth (skips /health).
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            auth_mw,
+        ))
         // A8: per-request HTTP timeout middleware.
         // Applied after routing so it sees every handler (including /health).
         // Reads X-Request-Timeout-Seconds header; caps at AppState::max_timeout_secs.
