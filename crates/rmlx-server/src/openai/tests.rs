@@ -1147,6 +1147,7 @@ fn slot_test_state(registry: ModelRegistry, max_loaded_models: usize) -> AppStat
         tokens_out: Arc::new(std::sync::atomic::AtomicU64::new(0)),
         error_counts: ApiErrorCounters::new(),
         started_at: Instant::now(),
+        auth_token: None,
         requests_started: Arc::new(std::sync::atomic::AtomicU64::new(0)),
         requests_completed: Arc::new(std::sync::atomic::AtomicU64::new(0)),
         requests_failed: Arc::new(std::sync::atomic::AtomicU64::new(0)),

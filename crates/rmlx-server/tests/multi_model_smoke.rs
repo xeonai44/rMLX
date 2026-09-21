@@ -115,6 +115,7 @@ async fn start_two_model_server() -> u16 {
         tokens_out: Arc::new(std::sync::atomic::AtomicU64::new(0)),
         error_counts: ApiErrorCounters::new(),
         started_at: std::time::Instant::now(),
+        auth_token: None,
         requests_started: Arc::new(std::sync::atomic::AtomicU64::new(0)),
         requests_completed: Arc::new(std::sync::atomic::AtomicU64::new(0)),
         requests_failed: Arc::new(std::sync::atomic::AtomicU64::new(0)),
